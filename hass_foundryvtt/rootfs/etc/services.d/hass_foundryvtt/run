@@ -4,10 +4,6 @@
 # s6-overlay docs: https://github.com/just-containers/s6-overlay
 # ==============================================================================
 
-# Ensure dependencies are installed
-bashio::log.info "Installing Dependencies"
-apk add nodejs
-
 # Declare variables
 declare timed_url
 declare port
@@ -16,9 +12,42 @@ declare port
 timed_url=$(bashio::config 'timed_url')
 port=$(bashio::config 'port')
 
+# File locations
+install_location=/data/foundryvtt
+data_location=/data/foundrydata
+
+# If we have provided a URL. Then lets try to download it.
+if [[ -n "$timed_url" ]]; then
+    if [[ ! "$timed_url" =~ ^https://[A-z0-9]+\.foundryvtt\.com\/releases\/ ]]; then
+	bashio::log.fatal "The URL provided is not a correct URL, please check."
+	exit 1
+    fi
+    bashio::log.info "Downloading $timed_url"
+    tempfile=/tmp/foundryvtt.zip
+    if wget -O "$tempfile" "$timed_url"; then
+	bashio::log.info "Download Success!"
+
+	bashio::log.info "Extracting FoundryVTT"
+	rm -rf $install_location
+	unzip $tempfile -d $install_location
+	rm $tempfile
+    else
+	bashio::log.warning "Download Failed. Please check the URL or clear it."
+    fi
+fi
+
+# Check that we have the needed application to start it up.
+startup=$install_location/main.js
+
+if [ ! -f "$startup" ]; then
+    bashio::log.fatal "No FoundryVTT data present. Have you added the Timed URL?"
+    exit 1
+fi
+
 bashio::log.info "Starting on port ${port}"
 ## Print the message the user supplied, defaults to "Hello World..."
 bashio::log.info "${timed_url:="Hello World..."}"
 
 ## Run your program
+node -v
 exec /usr/bin/my_program

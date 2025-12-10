@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: Hass FoundryVTT
-version: "1.0.0"
+version: "0.0.1"
 slug: hass_foundryvtt
 description: "Manage a FoundryVTT instance from Home Assistant"
 url: "https://github.com/internetimagery/hass_foundryvtt"
@@ -16,4 +16,3 @@ options:
 schema:
   timed_url: "str?"
   port: "int"
-image: "ghcr.io/home-assistant/{arch}-addon-example"
