@@ -1,4 +1,7 @@
 configuration:
-  message:
-    name: Message
-    description: The message that will be printed to the log when starting this example add-on.
+  timed_url:
+    name: TimedUrl
+    description: The url obtained from clicking the Timed URL button on the licensing page.
+  port:
+    name: Port
+    description: The port this server should be operating on

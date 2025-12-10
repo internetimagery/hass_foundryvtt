@@ -4,7 +4,9 @@
 # s6-overlay docs: https://github.com/just-containers/s6-overlay
 # ==============================================================================
 
-# Add your code here
+# Ensure dependencies are installed
+bashio::log.info "Installing Dependencies"
+apk add nodejs
 
 # Declare variables
 declare timed_url

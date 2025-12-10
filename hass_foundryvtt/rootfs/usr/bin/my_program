@@ -1,3 +1,5 @@
 #!/bin/bash
+#
+echo "RUNNING SCRIPT!"
 
 echo "All done!" > /share/example_addon_output.txt
