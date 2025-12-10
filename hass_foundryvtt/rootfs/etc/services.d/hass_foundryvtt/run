@@ -6,15 +6,14 @@
 
 # Declare variables
 declare timed_url
-declare port
 
 ## Get the keys from the user config options.
 timed_url=$(bashio::config 'timed_url')
-port=$(bashio::config 'port')
 
 # File locations
 install_location=/data/foundryvtt
 data_location=/data/foundrydata
+startup=$install_location/main.js
 
 # If we have provided a URL. Then lets try to download it.
 if [[ -n "$timed_url" ]]; then
@@ -28,26 +27,23 @@ if [[ -n "$timed_url" ]]; then
 	bashio::log.info "Download Success!"
 
 	bashio::log.info "Extracting FoundryVTT"
-	rm -rf $install_location
-	unzip $tempfile -d $install_location
-	rm $tempfile
+	rm -rf "$install_location"
+	mkdir -p "$install_location"
+	mkdir -p "$data_location"
+	unzip "$tempfile" -d "$install_location"
+	rm "$tempfile"
     else
 	bashio::log.warning "Download Failed. Please check the URL or clear it."
     fi
 fi
 
 # Check that we have the needed application to start it up.
-startup=$install_location/main.js
 
 if [ ! -f "$startup" ]; then
     bashio::log.fatal "No FoundryVTT data present. Have you added the Timed URL?"
     exit 1
 fi
 
-bashio::log.info "Starting on port ${port}"
-## Print the message the user supplied, defaults to "Hello World..."
-bashio::log.info "${timed_url:="Hello World..."}"
+bashio::log.info "Starting up..."
 
-## Run your program
-node -v
-exec /usr/bin/my_program
+exec /usr/bin/my_program "$startup" "$data_location"

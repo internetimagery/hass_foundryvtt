@@ -12,7 +12,11 @@ map:
   - share:rw
 options:
   timed_url: ""
-  port: 30000
 schema:
   timed_url: "str?"
-  port: "int"
+startup: services
+ports:
+  30000/tcp: 30000
+panel_icon: mdi:dice-d20-outline
+panel_title: FoundryVTT
+ingress: true

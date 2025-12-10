@@ -1,5 +1,9 @@
 #!/bin/bash
-#
-echo "RUNNING SCRIPT!"
 
-echo "All done!" > /share/example_addon_output.txt
+# TODO: Use share space as backup space, or app data perhaps?
+
+ls -al /
+ls -al /data
+ls -al /data/foundryvtt
+echo Running: node "$1" --port=30000 --dataPath="$2"
+node "$1" --port=30000 --dataPath="$2"
