@@ -7,13 +7,16 @@
 # Add your code here
 
 # Declare variables
-declare message
+declare timed_url
+declare port
 
-## Get the 'message' key from the user config options.
-message=$(bashio::config 'message')
+## Get the keys from the user config options.
+timed_url=$(bashio::config 'timed_url')
+port=$(bashio::config 'port')
 
+bashio::log.info "Starting on port ${port}"
 ## Print the message the user supplied, defaults to "Hello World..."
-bashio::log.info "${message:="Hello World..."}"
+bashio::log.info "${timed_url:="Hello World..."}"
 
 ## Run your program
 exec /usr/bin/my_program
