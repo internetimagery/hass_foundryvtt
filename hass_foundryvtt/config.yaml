@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: Hass FoundryVTT
-version: "0.0.4"
+version: "0.0.1"
 slug: hass_foundryvtt
 description: "Manage a FoundryVTT instance from Home Assistant"
 url: "https://github.com/internetimagery/hass_foundryvtt"
@@ -15,6 +15,6 @@ options:
 schema:
   timed_url: "str?"
 startup: services
+webui: "http://[HOST]:[PORT:30000]/"
 ports:
   30000/tcp: 30000
-webui: "http://[HOST]:30000"

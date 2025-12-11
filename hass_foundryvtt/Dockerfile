@@ -3,8 +3,7 @@ ARG BUILD_FROM
 FROM $BUILD_FROM
 
 # Install dependencies
-RUN \
-    apk add --no-cache nodejs nginx apparmor-profiles
+RUN apk add --no-cache nodejs
 
 # Copy root filesystem
 COPY rootfs /
