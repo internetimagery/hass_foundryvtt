@@ -1,13 +1,14 @@
 #include <tunables/global>
 
-profile example flags=(attach_disconnected,mediate_deleted) {
+profile hass_foundryvtt flags=(attach_disconnected,mediate_deleted) {
+  # Base HA add-on allowances (keep)
   #include <abstractions/base>
 
-  # Capabilities
+  # Capabilities used by init/services
   file,
   signal (send) set=(kill,term,int,hup,cont),
 
-  # S6-Overlay
+  # ---- S6-Overlay scaffolding (from HA example; keep) ----
   /init ix,
   /bin/** ix,
   /usr/bin/** ix,
@@ -20,39 +21,66 @@ profile example flags=(attach_disconnected,mediate_deleted) {
   /run/{,**} rwk,
   /dev/tty rw,
 
-  # Bashio
+  # ---- Bashio & temp ----
   /usr/lib/bashio/** ix,
   /tmp/** rwk,
 
-  # Access to options.json and other files within your addon
+  # ---- Add-on persistent storage ----
   /data/** rw,
 
-  # Start new profile for service
-  /usr/bin/my_program cx -> my_program,
+  # ---- Launch Foundry under Node subprofile ----
+  /usr/bin/node cx -> foundry_node,
 
-  profile my_program flags=(attach_disconnected,mediate_deleted,complain) {
+  # ---------------------------------------------------------
+  # Subprofile: Node/Foundry service (start in complain while learning)
+  profile foundry_node flags=(attach_disconnected,mediate_deleted,complain) {
+    # Common safe defaults + DNS
     #include <abstractions/base>
+    #include <abstractions/nameservice>                 # DNS resolver access
 
-    # Receive signals from S6-Overlay
-    signal (receive) peer=*_example,
+    # --- Networking (HTTP/WebSocket + outbound) ---
+    network,
 
-    # Access to options.json and other files within your addon
-    /data/** rw,
+    # If you bind privileged ports (<1024), keep this; otherwise you can remove it:
+    capability net_bind_service,                        # Capabilities are mediated by AppArmor
 
-    # Access to mapped volumes specified in config.json
-    /share/** rw,
+    # --- Hardening: deny dangerous caps ---
+    deny capability sys_admin,
+    deny capability sys_module,
+    deny capability sys_ptrace,
 
-    # Access required for service functionality
-    # Note: List was built by doing the following:
-    # 1. Add what is obviously needed based on what is in the script
-    # 2. Add `complain` as a flag to this profile temporarily and run the addon
-    # 3. Review the audit log with `journalctl _TRANSPORT="audit" -g 'apparmor="ALLOWED"'` and add other access as needed
-    # Remember to remove the `complain` flag when you are done
-    /usr/bin/my_program r,
-    /bin/bash rix,
+    # --- Node runtime & OS config reads ---
+    /etc/ssl/**                      r,
+    /usr/bin/node                    mr,
+    /usr/lib/**                      r,
+    /lib/**                          r,
+    /etc/ld.so.cache                 r,
+    /etc/{hosts,host.conf,nsswitch.conf,resolv.conf,passwd,gai.conf} r,
+    /run/systemd/resolve/{resolv.conf,stub-resolv.conf} r,
+
+    # Debian/Ubuntu packaged node modules (keep if your base image uses them)
+    /usr/share/nodejs/**             r,
+    /usr/share/ca-certificates/**    r,
+
+    # --- Foundry+mods data: confine writes to add-on dirs ---
+    /data/**                         rwk,               # worlds/modules/assets/logs per HA add-on layout
+    /tmp/**                          rwk,               # temp/cache
+
+    # Narrow /share to a specific subtree (avoid broad /share/** if not needed)
+    /share/foundry_data/**           rwk,
+
+    # --- Minimal procfs reads ---
+    /proc/**                         r,
+
+    # --- Optional helper tools mods may spawn (trim to what you need) ---
+    /usr/bin/{bash,sh,dash}          rix,
+    /usr/bin/{ffmpeg,convert,identify} ix,
+    /usr/bin/{tar,zip,unzip}         ix,
+    # Add more here only if required by your mods (e.g., curl, sox, pdftoppm)
+
+    # --- Keep from template as needed ---
     /bin/echo ix,
     /etc/passwd r,
     /dev/tty rw,
-    /usr/bin/node ix,
   }
 }

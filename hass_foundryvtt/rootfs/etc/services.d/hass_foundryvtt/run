@@ -47,5 +47,4 @@ fi
 mkdir -p "$data_location"
 
 bashio::log.info "Starting up..."
-
-exec /usr/bin/my_program "$startup" "$data_location"
+exec /usr/bin/node "$startup" --port=30000 --dataPath="$data_location"
