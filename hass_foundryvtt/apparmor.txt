@@ -3,6 +3,24 @@
 profile example flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
 
+  # Capabilities for NGINX
+  capability dac_override,
+  capability dac_read_search,
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability chown,
+
+  # Allow NGINX binaries and config
+  /usr/sbin/nginx ix,
+  /etc/nginx/** r,
+
+  # Allow NGINX logs and temp files
+  /var/log/nginx/** rwk,
+  /var/lib/nginx/** rwk,
+  /run/nginx.pid rw,
+  /tmp/** rwk,
+
   # Capabilities
   file,
   signal (send) set=(kill,term,int,hup,cont),

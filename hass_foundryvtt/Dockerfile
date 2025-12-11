@@ -4,7 +4,7 @@ FROM $BUILD_FROM
 
 # Install dependencies
 RUN \
-    apk add --no-cache nodejs
+    apk add --no-cache nodejs nginx apparmor-profiles
 
 # Copy root filesystem
 COPY rootfs /

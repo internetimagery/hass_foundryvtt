@@ -13,6 +13,7 @@ timed_url=$(bashio::config 'timed_url')
 # File locations
 install_location=/data/foundryvtt
 data_location=/data/foundrydata
+backup_location=/share/foundrybackups
 startup=$install_location/main.js
 
 # If we have provided a URL. Then lets try to download it.
@@ -32,6 +33,10 @@ if [[ -n "$timed_url" ]]; then
 	mkdir -p "$data_location"
 	unzip "$tempfile" -d "$install_location"
 	rm "$tempfile"
+
+	bashio::log.info "Setting backup location $backup_location"
+	mkdir -p "$backup_location"
+	ln -s "$backup_location" "$data_location/Backups"
     else
 	bashio::log.warning "Download Failed. Please check the URL or clear it."
     fi
@@ -43,6 +48,9 @@ if [ ! -f "$startup" ]; then
     bashio::log.fatal "No FoundryVTT data present. Have you added the Timed URL?"
     exit 1
 fi
+
+# bashio::log.info "Starting NGINX reverse proxy..."
+# nginx  # Start NGINX in the background (it daemonizes by default
 
 bashio::log.info "Starting up..."
 
