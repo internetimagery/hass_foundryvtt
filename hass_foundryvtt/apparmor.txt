@@ -53,11 +53,14 @@ profile hass_foundryvtt flags=(attach_disconnected,mediate_deleted) {
 	/etc/localtime r,
 
 	# --- Writable areas only where needed ---
-	/share/foundryvtt_data/** rwcdt,
-	/tmp/** rwcdt,
-	/root/.local/** rwc,
-	/root/.cache/** rwc,
-	/root/.npm/** rwc,
+	/tmp/** rwk,
+	/root/ rw,
+	/root/.local/ rwk,
+	/root/.local/** rwk,
+	/root/.cache/ rwk,
+	/root/.cache/** rwk,
+	/root/.npm/ rwk,
+	/root/.npm/** rwk,
 
 	# --- Guard rails (deny a few obvious secrets if present) ---
 	deny /etc/shadow r,
@@ -77,11 +80,8 @@ profile hass_foundryvtt flags=(attach_disconnected,mediate_deleted) {
 	/run/systemd/resolve/{resolv.conf,stub-resolv.conf} r,
 
 	# --- Foundry+mods data: confine writes to add-on dirs ---
-	/data/** rwk, # Install location
-	/tmp/** rwk,  # Temp/cache
-
-	# Narrow /share to a specific subtree (avoid broad /share/** if not needed)
-	/share/foundry_data/** rwk,
+	/data/** mrw, # Install location
+	/share/foundryvtt_data/** rwk,
 
 	# Broad READ of tool directories
 	/bin/** r,
