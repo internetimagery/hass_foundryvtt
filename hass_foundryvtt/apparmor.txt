@@ -33,54 +33,72 @@ profile hass_foundryvtt flags=(attach_disconnected,mediate_deleted) {
 
   # ---------------------------------------------------------
   # Subprofile: Node/Foundry service (start in complain while learning)
-  profile foundry_node flags=(attach_disconnected,mediate_deleted,complain) {
-    # Common safe defaults + DNS
-    #include <abstractions/base>
-    #include <abstractions/nameservice>                 # DNS resolver access
+  profile foundry_node flags=(attach_disconnected,mediate_deleted) {
+	# Baseline
+	#include <abstractions/base>
+	#include <abstractions/nameservice>
+	#include <abstractions/ssl_certs>
+	network,
 
-    # --- Networking (HTTP/WebSocket + outbound) ---
-    network,
+	# --- Broad READ of system trees ---
+	/etc/** r,
+	/usr/share/** r,
+	/usr/include/** r,        # harmless includes if present
+	/lib/** mr,               # shared libs: read + mmap
+	/usr/lib/** mr,           # shared libs: read + mmap
+	/proc/** r,
+	/sys/** r,
 
-    # If you bind privileged ports (<1024), keep this; otherwise you can remove it:
-    capability net_bind_service,                        # Capabilities are mediated by AppArmor
+	# Optional: timezones/localtime may live in /etc or /usr/share
+	/etc/localtime r,
 
-    # --- Hardening: deny dangerous caps ---
-    deny capability sys_admin,
-    deny capability sys_module,
-    deny capability sys_ptrace,
+	# --- Writable areas only where needed ---
+	/share/foundryvtt_data/** rwcdt,
+	/tmp/** rwcdt,
+	/root/.local/** rwc,
+	/root/.cache/** rwc,
+	/root/.npm/** rwc,
 
-    # --- Node runtime & OS config reads ---
-    /etc/ssl/**                      r,
-    /usr/bin/node                    mr,
-    /usr/lib/**                      r,
-    /lib/**                          r,
-    /etc/ld.so.cache                 r,
-    /etc/{hosts,host.conf,nsswitch.conf,resolv.conf,passwd,gai.conf} r,
-    /run/systemd/resolve/{resolv.conf,stub-resolv.conf} r,
+	# --- Guard rails (deny a few obvious secrets if present) ---
+	deny /etc/shadow r,
+	deny /etc/ssh/** r,
+	deny /etc/ssl/private/** r,
 
-    # Debian/Ubuntu packaged node modules (keep if your base image uses them)
-    /usr/share/nodejs/**             r,
-    /usr/share/ca-certificates/**    r,
+	# Receive signals from S6-Overlay
+	signal (receive) peer=*_hass_foundryvtt,
 
-    # --- Foundry+mods data: confine writes to add-on dirs ---
-    /data/**                         rwk,               # worlds/modules/assets/logs per HA add-on layout
-    /tmp/**                          rwk,               # temp/cache
+	# --- Hardening: deny dangerous caps ---
+	deny capability sys_admin,
+	deny capability sys_module,
+	deny capability sys_ptrace,
 
-    # Narrow /share to a specific subtree (avoid broad /share/** if not needed)
-    /share/foundry_data/**           rwk,
+	# --- Node runtime & OS config reads ---
+	/usr/bin/node mr,
+	/run/systemd/resolve/{resolv.conf,stub-resolv.conf} r,
 
-    # --- Minimal procfs reads ---
-    /proc/**                         r,
+	# --- Foundry+mods data: confine writes to add-on dirs ---
+	/data/** rwk, # Install location
+	/tmp/** rwk,  # Temp/cache
 
-    # --- Optional helper tools mods may spawn (trim to what you need) ---
-    /usr/bin/{bash,sh,dash}          rix,
-    /usr/bin/{ffmpeg,convert,identify} ix,
-    /usr/bin/{tar,zip,unzip}         ix,
-    # Add more here only if required by your mods (e.g., curl, sox, pdftoppm)
+	# Narrow /share to a specific subtree (avoid broad /share/** if not needed)
+	/share/foundry_data/** rwk,
 
-    # --- Keep from template as needed ---
-    /bin/echo ix,
-    /etc/passwd r,
-    /dev/tty rw,
+	# Broad READ of tool directories
+	/bin/** r,
+	/usr/bin/** r,
+	/sbin/** r,
+	/usr/sbin/** r,
+
+	# If the app needs to EXEC tools, enable inherit-exec (still confined).
+	# Comment these out if you don’t want any external tool execution.
+	/bin/** ix,
+	/usr/bin/** ix,
+	/sbin/** ix,
+	/usr/sbin/** ix,
+
+	# --- Keep from template as needed ---
+	/bin/echo ix,
+	/etc/passwd r,
+	/dev/tty rw,
   }
 }

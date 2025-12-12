@@ -1,4 +1,0 @@
-#!/bin/bash
-
-echo Running: node "$1" --port=30000 --dataPath="$2"
-node "$1" --port=30000 --dataPath="$2"
