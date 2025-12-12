@@ -18,3 +18,4 @@ startup: services
 webui: "http://[HOST]:[PORT:30000]/"
 ports:
   30000/tcp: 30000
+image: "ghcr.io/internetimagery/{arch}-hass-foundryvtt"
